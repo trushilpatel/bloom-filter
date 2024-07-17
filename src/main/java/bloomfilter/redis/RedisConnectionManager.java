@@ -25,11 +25,11 @@ public class RedisConnectionManager {
         }
     }
 
-    public static Jedis getJedis() throws IllegalAccessException {
+    public static JedisPool getJedisPool() throws IllegalAccessException {
         if (jedisPool == null) {
             throw new IllegalAccessException("JedisPool not initialized. Call initialize() first.");
         }
-        return jedisPool.getResource();
+        return jedisPool;
     }
 
     public static void shutdown() {
@@ -37,4 +37,10 @@ public class RedisConnectionManager {
             jedisPool.clear();
         }
     }
+
+    public static Jedis getJedis() throws IllegalAccessException {
+        if (jedisPool == null) {
+            throw new IllegalAccessException("JedisPool not initialized. Call initialize() first.");
+        }
+        return jedisPool.getResource();    }
 }

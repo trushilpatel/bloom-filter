@@ -6,22 +6,40 @@ import java.util.Map;
 import java.util.Properties;
 
 public class RedisConfigs {
-    private final String host;
-    private final int port;
-    private final int timeout;
-    private final String password;
-    private final int maxTotal;
-    private final int maxIdle;
-    private final int minIdle;
-    private final boolean testOnBorrow;
-    private final boolean testOnReturn;
-    private final boolean testWhileIdle;
-    private final int timeBetweenEvictionRunsMillis;
-    private final int minEvictableIdleTimeMillis;
-    private final int numTestsPerEvictionRun;
+    private String host;
+    private int port;
+    private int timeout;
+    private String password;
+    private int maxTotal;
+    private int maxIdle;
+    private int minIdle;
+    private boolean testOnBorrow;
+    private boolean testOnReturn;
+    private boolean testWhileIdle;
+    private int timeBetweenEvictionRunsMillis;
+    private int minEvictableIdleTimeMillis;
+    private int numTestsPerEvictionRun;
+
+
+    public RedisConfigs() {
+        Map<String, String> envVariables = System.getenv();
+        String environment = envVariables.get("env");
+
+        switch (environment) {
+            case "DOCKER":
+                this.usingEnvVariables();
+                break;
+            case "LOCAL":
+                String propertyFile = "redis.properties";
+                this.usingConfigFile(propertyFile);
+                break;
+            default:
+                System.out.println("Please configure redis environment variables properly.");
+        }
+    }
 
     // Configure using docker compose env files
-    public RedisConfigs() {
+    private void usingEnvVariables() {
         Map<String, String> env = System.getenv();
 
         this.host = env.getOrDefault("REDIS_HOST", "localhost");
@@ -40,27 +58,30 @@ public class RedisConfigs {
     }
 
     // configure using properties file
-    public RedisConfigs(String propertiesFilePath) throws IOException {
+    private void usingConfigFile(String propertiesFilePath) {
         Properties properties = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(propertiesFilePath)) {
             if (input == null) {
                 throw new IOException("Properties file not found: " + propertiesFilePath);
             }
             properties.load(input);
+
+            this.host = properties.getProperty("redis.host");
+            this.port = Integer.parseInt(properties.getProperty("redis.port"));
+            this.timeout = Integer.parseInt(properties.getProperty("redis.timeout"));
+            this.password = properties.getProperty("redis.password");
+            this.maxTotal = Integer.parseInt(properties.getProperty("redis.maxTotal"));
+            this.maxIdle = Integer.parseInt(properties.getProperty("redis.maxIdle"));
+            this.minIdle = Integer.parseInt(properties.getProperty("redis.minIdle"));
+            this.testOnBorrow = Boolean.parseBoolean(properties.getProperty("redis.testOnBorrow"));
+            this.testOnReturn = Boolean.parseBoolean(properties.getProperty("redis.testOnReturn"));
+            this.testWhileIdle = Boolean.parseBoolean(properties.getProperty("redis.testWhileIdle"));
+            this.timeBetweenEvictionRunsMillis = Integer.parseInt(properties.getProperty("redis.timeBetweenEvictionRunsMillis"));
+            this.minEvictableIdleTimeMillis = Integer.parseInt(properties.getProperty("redis.minEvictableIdleTimeMillis"));
+            this.numTestsPerEvictionRun = Integer.parseInt(properties.getProperty("redis.numTestsPerEvictionRun"));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        this.host = properties.getProperty("redis.host");
-        this.port = Integer.parseInt(properties.getProperty("redis.port"));
-        this.timeout = Integer.parseInt(properties.getProperty("redis.timeout"));
-        this.password = properties.getProperty("redis.password");
-        this.maxTotal = Integer.parseInt(properties.getProperty("redis.maxTotal"));
-        this.maxIdle = Integer.parseInt(properties.getProperty("redis.maxIdle"));
-        this.minIdle = Integer.parseInt(properties.getProperty("redis.minIdle"));
-        this.testOnBorrow = Boolean.parseBoolean(properties.getProperty("redis.testOnBorrow"));
-        this.testOnReturn = Boolean.parseBoolean(properties.getProperty("redis.testOnReturn"));
-        this.testWhileIdle = Boolean.parseBoolean(properties.getProperty("redis.testWhileIdle"));
-        this.timeBetweenEvictionRunsMillis = Integer.parseInt(properties.getProperty("redis.timeBetweenEvictionRunsMillis"));
-        this.minEvictableIdleTimeMillis = Integer.parseInt(properties.getProperty("redis.minEvictableIdleTimeMillis"));
-        this.numTestsPerEvictionRun = Integer.parseInt(properties.getProperty("redis.numTestsPerEvictionRun"));
     }
 
     public String getHost() {

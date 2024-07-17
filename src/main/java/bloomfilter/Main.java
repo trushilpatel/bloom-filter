@@ -3,6 +3,7 @@ package bloomfilter;
 import bloomfilter.redis.RedisConfigs;
 import bloomfilter.redis.RedisConnectionManager;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
 
@@ -11,13 +12,15 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) {
         try {
-            RedisConfigs configs = new RedisConfigs("redis.properties");
+            RedisConfigs configs = new RedisConfigs();
 
             RedisConnectionManager.initialize(configs);
 
-            Jedis jedis = RedisConnectionManager.getJedis();
+            JedisPool jedisPool = RedisConnectionManager.getJedisPool();
+            Jedis jedis = jedisPool.getResource();
             jedis.set("Hello", "World");
-        } catch (IOException | IllegalAccessException e) {
+
+        } catch (IllegalAccessException e) {
             System.out.println("Failed to load Redis Configuration: " + e.getMessage());
         }
     }
