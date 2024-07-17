@@ -25,6 +25,14 @@ public class RedisConfigs {
         Map<String, String> envVariables = System.getenv();
         String environment = envVariables.get("env");
 
+        if(environment == null) {
+            environment = System.getProperty("env");
+        }
+
+        if(environment == null) {
+            throw new RuntimeException("Please configure redis environment variables properly.");
+        }
+
         switch (environment) {
             case "DOCKER":
                 this.usingEnvVariables();

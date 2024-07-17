@@ -1,26 +1,27 @@
-package bloomfilter.memory;
-
+package bloomfilter.redis;
 
 import bloomfilter.BloomFilter;
+import bloomfilter.memory.InMemoryBloomFilter;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
 
 import static bloomfilter.utils.Helper.generateRandomString;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryBloomFilterTest {
+class RedisBloomFilterTest {
+
     @Test
     public void testInMemoryBloomFilterImpl() {
-        int expectedSize = 10_000_000;
+        System.setProperty("env", "LOCAL");
+        int expectedSize = 10_000;
         float fpProbability = 0.01f;
-        BloomFilter bloomFilter = new InMemoryBloomFilter(expectedSize, fpProbability);
+        BloomFilter bloomFilter = new RedisBloomFilter(expectedSize, fpProbability);
         System.out.println(bloomFilter);
 
 
         // must contain string
-        String s1 = "Hello";
+        String s1 = "Hi";
         bloomFilter.add(s1);
         assertTrue(bloomFilter.contains(s1));
 
@@ -30,8 +31,8 @@ class InMemoryBloomFilterTest {
 
         // Check add performance
         long start = System.currentTimeMillis();
-        int n = 1_000_000;
-        int length = 25;
+        int n = 10_000;
+        int length = 12;
         for (int i = 0; i < n; i++) {
             bloomFilter.add(generateRandomString(length));
         }
@@ -43,13 +44,13 @@ class InMemoryBloomFilterTest {
         start = System.currentTimeMillis();
         long collision = 0;
         for (int i = 0; i < n; i++) {
-            if(bloomFilter.contains(generateRandomString(length)))
+            if (bloomFilter.contains(generateRandomString(length)))
                 collision++;
         }
         end = System.currentTimeMillis();
 
         System.out.println("Contains => Total time taken: " + (end - start) + " ms");
-        System.out.println("Collision: " + collision );
-        System.out.println("Collision Percentage: "  + ((double)(collision*100))/n + "%");
+        System.out.println("Collision: " + collision);
+        System.out.println("Collision Percentage: " + ((double) (collision * 100)) / n + "%");
     }
 }

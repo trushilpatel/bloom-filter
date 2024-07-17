@@ -31,7 +31,7 @@ public class RedisBitSet {
     }
 
     boolean get(int index) {
-        try(Jedis jedis = RedisConnectionManager.getJedis()) {
+        try (Jedis jedis = RedisConnectionManager.getJedis()) {
             return jedis.getbit(name, index);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
