@@ -2,6 +2,7 @@ package bloomfilter.redis;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 public class RedisConfigs {
@@ -19,6 +20,26 @@ public class RedisConfigs {
     private final int minEvictableIdleTimeMillis;
     private final int numTestsPerEvictionRun;
 
+    // Configure using docker compose env files
+    public RedisConfigs() {
+        Map<String, String> env = System.getenv();
+
+        this.host = env.getOrDefault("REDIS_HOST", "localhost");
+        this.port = Integer.parseInt(env.getOrDefault("REDIS_PORT", "6379"));
+        this.timeout = Integer.parseInt(env.getOrDefault("REDIS_TIMEOUT", "2000"));
+        this.password = env.getOrDefault("REDIS_PASSWORD", "");
+        this.maxTotal = Integer.parseInt(env.getOrDefault("REDIS_MAXTOTAL", "128"));
+        this.maxIdle = Integer.parseInt(env.getOrDefault("REDIS_MAXIDLE", "128"));
+        this.minIdle = Integer.parseInt(env.getOrDefault("REDIS_MINIDLE", "16"));
+        this.testOnBorrow = Boolean.parseBoolean(env.getOrDefault("REDIS_TESTONBORROW", "true"));
+        this.testOnReturn = Boolean.parseBoolean(env.getOrDefault("REDIS_TESTONRETURN", "true"));
+        this.testWhileIdle = Boolean.parseBoolean(env.getOrDefault("REDIS_TESTWHILEIDLE", "true"));
+        this.timeBetweenEvictionRunsMillis = Integer.parseInt(env.getOrDefault("REDIS_TIMEEVICTIONRUNS", "30000"));
+        this.minEvictableIdleTimeMillis = Integer.parseInt(env.getOrDefault("REDIS_MINEVICTIONIDLE", "60000"));
+        this.numTestsPerEvictionRun = Integer.parseInt(env.getOrDefault("REDIS_NUMTESTSEVICTION", "-1"));
+    }
+
+    // configure using properties file
     public RedisConfigs(String propertiesFilePath) throws IOException {
         Properties properties = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(propertiesFilePath)) {

@@ -4,9 +4,16 @@ services:
   redis:
     image: redis:latest
     container_name: bloom-filter-redis
+    command:
+      - bash
+      - -c
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
     ports:
       - "6379:6379"
     volumes:
       - redis:/var/lib/redis/data
     env_file:
       - "./env/redis.env"
+
+volumes:
+  redis:
