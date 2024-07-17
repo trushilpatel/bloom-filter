@@ -16,11 +16,11 @@ public class RedisBloomFilter implements BloomFilter {
     private final HashMethod hm1;
     private final HashMethod hm2;
 
-    RedisBloomFilter(int expectedElements, float fpProbability) {
+    RedisBloomFilter(String name, int expectedElements, float fpProbability) {
         this.expectedElements = expectedElements;
         this.fpProbability = fpProbability;
         this.bloomSize = calculateBloomSize();
-        this.bloom = new RedisBitSet("bloom-filter", this.bloomSize);
+        this.bloom = new RedisBitSet(name, this.bloomSize);
         this.hashFunctions = this.calculateHashFunctions();
         this.hm1 = new MurmurHash(1);
         this.hm2 = new MurmurHash(2);
@@ -31,10 +31,15 @@ public class RedisBloomFilter implements BloomFilter {
         int h1 = hm1.hash(b);
         int h2 = hm2.hash(b);
 
+
+        int[] indexes = new int[this.hashFunctions];
         for (int fn = 1; fn <= this.hashFunctions; fn++) {
             int hash = Math.abs(h1 + h2 * fn) % this.bloomSize;
-            bloom.set(hash, true);
+            //bloom.set(hash, true);
+            indexes[fn - 1] = hash;
         }
+
+        bloom.pipelinedSet(indexes, true);
     }
 
     @Override
@@ -42,13 +47,14 @@ public class RedisBloomFilter implements BloomFilter {
         int h1 = hm1.hash(b);
         int h2 = hm2.hash(b);
 
+        int[] indexes = new int[this.hashFunctions];
         for (int fn = 1; fn <= this.hashFunctions; fn++) {
             int hash = Math.abs(h1 + h2 * fn) % this.bloomSize;
-            if (!bloom.get(hash))
-                return false;
+            //bloom.set(hash, true);
+            indexes[fn - 1] = hash;
         }
 
-        return true;
+        return bloom.pipelinedGet(indexes);
     }
 
     @Override
