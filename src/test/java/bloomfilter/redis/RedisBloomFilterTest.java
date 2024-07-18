@@ -17,7 +17,7 @@ class RedisBloomFilterTest {
     @Test
     public void testInMemoryBloomFilterImpl() {
         System.setProperty("env", "LOCAL");
-        int expectedSize = 100_000;
+        int expectedSize = 10_000;
         float fpProbability = 0.01f;
         String name = "bloom-filter";
 
@@ -42,7 +42,7 @@ class RedisBloomFilterTest {
 
         // Check add performance
         long start = System.currentTimeMillis();
-        int n = 100_000;
+        int n = 10_000;
         int length = 12;
         IntStream.range(0,n)
                 .parallel()

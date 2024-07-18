@@ -3,12 +3,11 @@ package bloomfilter.redis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
 
 import java.util.List;
 
 public class RedisBitSet {
-    private JedisPool pool;
+    private final JedisPool pool;
     private final String name;
     public final int size;
 
@@ -26,47 +25,50 @@ public class RedisBitSet {
     }
 
     boolean set(int index, boolean value) {
-        try (Jedis jedis = RedisConnectionManager.getJedis()) {
-            return jedis.setbit(name, index, value);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        if (index >= size) {
+            throw new IndexOutOfBoundsException("Index out of bounds: " + index);
         }
-        return false;
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.setbit(name, index, value);
+        }
     }
 
     void pipelinedSet(int[] indexes, boolean value) {
-        try (Jedis jedis = RedisConnectionManager.getJedis()) {
+        try (Jedis jedis = pool.getResource()) {
             Pipeline pipeline = jedis.pipelined();
-
-            for(int index: indexes)
+            for (int index : indexes) {
+                if (index >= size)
+                    throw new IndexOutOfBoundsException("Index out of bounds: " + index);
                 pipeline.setbit(name, index, value);
-
+            }
             pipeline.sync();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
     }
 
     boolean get(int index) {
-        try (Jedis jedis = RedisConnectionManager.getJedis()) {
+        try (Jedis jedis = pool.getResource()) {
             return jedis.getbit(name, index);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
-        return false;
     }
 
     boolean pipelinedGet(int[] indexes) {
-        try (Jedis jedis = RedisConnectionManager.getJedis()) {
+        try (Jedis jedis = pool.getResource()) {
             Pipeline pipeline = jedis.pipelined();
-            for (int index: indexes) {
+            for (int index : indexes) {
+                if (index >= size)
+                    throw new IndexOutOfBoundsException("Index out of bounds: " + index);
                 pipeline.getbit(name, index);
             }
             List<Object> response = pipeline.syncAndReturnAll();
             return response.stream().allMatch(bit -> (boolean) bit);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
-        return false;
+    }
+
+    boolean clear() {
+        try (Jedis jedis = pool.getResource()) {
+            Pipeline pipeline = jedis.pipelined();
+            pipeline.del(name);
+            return true;
+        }
     }
 }

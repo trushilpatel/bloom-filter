@@ -7,16 +7,20 @@ import bloomfilter.hashFunctions.MurmurHash;
 import java.util.BitSet;
 
 public class InMemoryBloomFilter implements BloomFilter {
-    private final BitSet bloom;
-    private final int bloomSize;
-    private final int expectedElements;
+    private BitSet bloom;
+    private int bloomSize;
+    private int expectedElements;
     // False Positive probability
-    private final float fpProbability;
-    private final int hashFunctions;
-    private final HashMethod hm1;
-    private final HashMethod hm2;
+    private float fpProbability;
+    private int hashFunctions;
+    private HashMethod hm1;
+    private HashMethod hm2;
 
     InMemoryBloomFilter(int expectedElements, float fpProbability) {
+        initialise(expectedElements, fpProbability);
+    }
+
+    private void initialise(int expectedElements, float fpProbability) {
         this.expectedElements = expectedElements;
         this.fpProbability = fpProbability;
         this.bloomSize = calculateBloomSize();
@@ -24,6 +28,20 @@ public class InMemoryBloomFilter implements BloomFilter {
         this.hashFunctions = this.calculateHashFunctions();
         this.hm1 = new MurmurHash(1);
         this.hm2 = new MurmurHash(2);
+
+    }
+
+    @Override
+    public boolean initialiseBloom(String name, int expectedElements, float fpProbability) {
+        bloom.clear();
+        initialise(expectedElements, fpProbability);
+        return true;
+    }
+
+    @Override
+    public boolean clear() {
+        bloom.clear();
+        return true;
     }
 
     @Override

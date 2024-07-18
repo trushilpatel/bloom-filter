@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 
 public interface BloomFilter {
 
+    boolean initialiseBloom(String name, int expectedElements, float fpProbability);
+    boolean clear();
     // insert string into the bloom
     void add(byte[] b);
 

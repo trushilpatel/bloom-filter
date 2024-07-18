@@ -28,9 +28,8 @@ public class RedisConfigs {
         if(environment == null) {
             environment = System.getProperty("env");
         }
-
         if(environment == null) {
-            throw new RuntimeException("Please configure redis environment variables properly.");
+            environment = "LOCAL";
         }
 
         switch (environment) {
@@ -38,12 +37,13 @@ public class RedisConfigs {
                 this.usingEnvVariables();
                 break;
             case "LOCAL":
-                String propertyFile = "redis.properties";
+                String propertyFile = "application.properties";
                 this.usingConfigFile(propertyFile);
                 break;
             default:
                 System.out.println("Please configure redis environment variables properly.");
         }
+        printRedisConfig();
     }
 
     // Configure using docker compose env files
@@ -142,5 +142,26 @@ public class RedisConfigs {
 
     public int getNumTestsPerEvictionRun() {
         return numTestsPerEvictionRun;
+    }
+
+    public void printRedisConfig() {
+        System.out.println("***************REDIS CONFIGURATIONS*****************");
+
+        System.out.println("Redis Configuration:");
+        System.out.println("Host: " + host);
+        System.out.println("Port: " + port);
+        System.out.println("Timeout: " + timeout);
+        System.out.println("Password: " + password);
+        System.out.println("MaxTotal: " + maxTotal);
+        System.out.println("MaxIdle: " + maxIdle);
+        System.out.println("MinIdle: " + minIdle);
+        System.out.println("TestOnBorrow: " + testOnBorrow);
+        System.out.println("TestOnReturn: " + testOnReturn);
+        System.out.println("TestWhileIdle: " + testWhileIdle);
+        System.out.println("TimeBetweenEvictionRunsMillis: " + timeBetweenEvictionRunsMillis);
+        System.out.println("MinEvictableIdleTimeMillis: " + minEvictableIdleTimeMillis);
+        System.out.println("NumTestsPerEvictionRun: " + numTestsPerEvictionRun);
+
+        System.out.println("***************END OF CONFIGURATIONS*****************");
     }
 }

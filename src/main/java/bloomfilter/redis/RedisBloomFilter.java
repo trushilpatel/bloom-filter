@@ -7,16 +7,20 @@ import bloomfilter.hashFunctions.MurmurHash;
 import java.util.BitSet;
 
 public class RedisBloomFilter implements BloomFilter {
-    private final RedisBitSet bloom;
-    private final int bloomSize;
-    private final int expectedElements;
+    private RedisBitSet bloom;
+    private int bloomSize;
+    private int expectedElements;
     // False Positive probability
-    private final float fpProbability;
-    private final int hashFunctions;
-    private final HashMethod hm1;
-    private final HashMethod hm2;
+    private float fpProbability;
+    private int hashFunctions;
+    private HashMethod hm1;
+    private HashMethod hm2;
 
-    RedisBloomFilter(String name, int expectedElements, float fpProbability) {
+    public RedisBloomFilter(String name, int expectedElements, float fpProbability) {
+        initialise(name, expectedElements, fpProbability);
+    }
+
+    private void initialise(String name, int expectedElements, float fpProbability) {
         this.expectedElements = expectedElements;
         this.fpProbability = fpProbability;
         this.bloomSize = calculateBloomSize();
@@ -24,6 +28,17 @@ public class RedisBloomFilter implements BloomFilter {
         this.hashFunctions = this.calculateHashFunctions();
         this.hm1 = new MurmurHash(1);
         this.hm2 = new MurmurHash(2);
+    }
+
+    @Override
+    public boolean initialiseBloom(String name, int expectedElements, float fpProbability) {
+        initialise(name, expectedElements, fpProbability);
+        return false;
+    }
+
+    @Override
+    public boolean clear() {
+       return bloom.clear();
     }
 
     @Override
